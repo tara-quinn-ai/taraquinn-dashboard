@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import styles from './products.module.css'
 import Script from 'next/script'
+import { useState } from 'react'
 
 declare global {
   interface Window {
@@ -11,7 +12,14 @@ declare global {
 }
 
 export default function Products() {
+  const [stripeLoaded, setStripeLoaded] = useState(false)
+
   const handleCheckout = async (priceId: string) => {
+    if (!stripeLoaded || !window.Stripe) {
+      alert('Loading payment system...');
+      return;
+    }
+
     const stripe = window.Stripe('pk_live_51RuCOGBiXO7BlMq4XEJI1M8fllSDEfhRTUU02SmDVZwQD6FpCZAOQ9n1GO5XuSGwYuai5615oY5KRwJEoKOky0El00DQQMVoMw');
     
     try {
@@ -21,8 +29,16 @@ export default function Products() {
         body: JSON.stringify({ priceId })
       });
       
+      if (!response.ok) {
+        throw new Error('Checkout failed');
+      }
+      
       const { sessionId } = await response.json();
-      await stripe.redirectToCheckout({ sessionId });
+      const result = await stripe.redirectToCheckout({ sessionId });
+      
+      if (result.error) {
+        alert(result.error.message);
+      }
     } catch (err) {
       console.error('Checkout error:', err);
       alert('Payment error. Please try again.');
@@ -31,7 +47,11 @@ export default function Products() {
 
   return (
     <>
-      <Script src="https://js.stripe.com/v3/" strategy="beforeInteractive" />
+      <Script 
+        src="https://js.stripe.com/v3/" 
+        strategy="afterInteractive"
+        onLoad={() => setStripeLoaded(true)}
+      />
       
       <nav className={styles.nav}>
         <div className="container">
@@ -101,8 +121,9 @@ export default function Products() {
                 <button 
                   className={styles.btnBuy}
                   onClick={() => handleCheckout('price_1T4OvJBiXO7BlMq4HCAw1WxV')}
+                  disabled={!stripeLoaded}
                 >
-                  Buy Now →
+                  {stripeLoaded ? 'Buy Now →' : 'Loading...'}
                 </button>
               </div>
               
