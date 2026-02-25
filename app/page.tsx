@@ -115,12 +115,20 @@ export default function Home() {
                 
                 <div className={styles.tokenActions}>
                   <a 
-                    href="https://app.uniswap.org/#/swap?outputCurrency=0x00D54b219F84E7d97090e41D25f0D28D5f745b07&chain=base"
+                    href="https://clanker.world/clanker/0x00D54b219F84E7d97090e41D25f0D28D5f745b07"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.btnToken}
                   >
-                    Buy on Uniswap →
+                    View on Clanker →
+                  </a>
+                  <a 
+                    href="https://app.uniswap.org/#/swap?outputCurrency=0x00D54b219F84E7d97090e41D25f0D28D5f745b07&chain=base"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.btnExplorer}
+                  >
+                    Buy on Uniswap
                   </a>
                   <a 
                     href="https://basescan.org/token/0x00D54b219F84E7d97090e41D25f0D28D5f745b07"
