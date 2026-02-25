@@ -1,9 +1,38 @@
+'use client'
+
 import Link from 'next/link'
 import styles from './products.module.css'
+import Script from 'next/script'
+
+declare global {
+  interface Window {
+    Stripe: any;
+  }
+}
 
 export default function Products() {
+  const handleCheckout = async (priceId: string) => {
+    const stripe = window.Stripe('pk_live_51RuCOGBiXO7BlMq4XEJI1M8fllSDEfhRTUU02SmDVZwQD6FpCZAOQ9n1GO5XuSGwYuai5615oY5KRwJEoKOky0El00DQQMVoMw');
+    
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId })
+      });
+      
+      const { sessionId } = await response.json();
+      await stripe.redirectToCheckout({ sessionId });
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Payment error. Please try again.');
+    }
+  }
+
   return (
     <>
+      <Script src="https://js.stripe.com/v3/" strategy="beforeInteractive" />
+      
       <nav className={styles.nav}>
         <div className="container">
           <div className={styles.navContent}>
@@ -107,29 +136,6 @@ export default function Products() {
           </div>
         </div>
       </footer>
-
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          async function handleCheckout(priceId) {
-            const stripe = Stripe('pk_live_51RuCOGBiXO7BlMq4XEJI1M8fllSDEfhRTUU02SmDVZwQD6FpCZAOQ9n1GO5XuSGwYuai5615oY5KRwJEoKOky0El00DQQMVoMw');
-            
-            try {
-              const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ priceId })
-              });
-              
-              const { sessionId } = await response.json();
-              await stripe.redirectToCheckout({ sessionId });
-            } catch (err) {
-              console.error('Checkout error:', err);
-              alert('Payment error. Please try again.');
-            }
-          }
-        `
-      }} />
-      <script src="https://js.stripe.com/v3/"></script>
     </>
   )
 }
