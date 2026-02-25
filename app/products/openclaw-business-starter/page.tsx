@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import styles from './product.module.css'
 import Script from 'next/script'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 declare global {
   interface Window {
@@ -13,6 +13,13 @@ declare global {
 
 export default function BusinessStarterProduct() {
   const [stripeLoaded, setStripeLoaded] = useState(false)
+
+  useEffect(() => {
+    // Check if Stripe is already loaded
+    if (typeof window !== 'undefined' && window.Stripe) {
+      setStripeLoaded(true)
+    }
+  }, [])
 
   const handleCheckout = async (priceId: string) => {
     if (!stripeLoaded || !window.Stripe) {
