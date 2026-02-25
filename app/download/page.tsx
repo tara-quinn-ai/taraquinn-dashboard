@@ -31,7 +31,7 @@ export default function Download() {
             </div>
 
             <div className={styles.instructions}>
-              <h2>Installation (< 5 Minutes)</h2>
+              <h2>Installation (&lt; 5 Minutes)</h2>
               <div className={styles.codeBlock}>
                 <code># 1. Extract the package</code>
                 <code>cd ~/Downloads</code>
