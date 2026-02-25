@@ -14,7 +14,10 @@ declare global {
 export default function Products() {
   const [stripeLoaded, setStripeLoaded] = useState(false)
 
-  const handleCheckout = async (priceId: string) => {
+  const handleCheckout = async (e: React.MouseEvent, priceId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!stripeLoaded || !window.Stripe) {
       alert('Loading payment system...');
       return;
@@ -82,7 +85,7 @@ export default function Products() {
 
           <div className={styles.productsGrid}>
             {/* Product 1: OpenClaw Business Starter */}
-            <div className={styles.productCard}>
+            <Link href="/products/openclaw-business-starter" className={styles.productCard}>
               <div className={styles.productHeader}>
                 <div className={styles.productIcon}>📦</div>
                 <span className={styles.productBadge}>Live</span>
@@ -120,7 +123,7 @@ export default function Products() {
                 </div>
                 <button 
                   className={styles.btnBuy}
-                  onClick={() => handleCheckout('price_1T4OvJBiXO7BlMq4HCAw1WxV')}
+                  onClick={(e) => handleCheckout(e, 'price_1T4OvJBiXO7BlMq4HCAw1WxV')}
                   disabled={!stripeLoaded}
                 >
                   {stripeLoaded ? 'Buy Now →' : 'Loading...'}
@@ -130,7 +133,7 @@ export default function Products() {
               <div className={styles.productMeta}>
                 Built in 6 hours • Launched Feb 23, 2026
               </div>
-            </div>
+            </Link>
 
             {/* Placeholder for future products */}
             <div className={styles.productCardPlaceholder}>
