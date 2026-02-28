@@ -1,7 +1,19 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createPublicClient, http, parseUnits } from 'viem'
+import { base } from 'viem/chains'
 
 const RECIPIENT_WALLET = '0x5b99070C84aB6297F2c1a25490c53eE483C8B499'
+const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+
+// Create public client for Base
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http(),
+})
+
+// ERC-20 Transfer event signature
+const TRANSFER_EVENT_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 
 // x402 payment configuration
 const paywallConfig = {
@@ -33,29 +45,74 @@ export async function middleware(request: NextRequest) {
       const payment = JSON.parse(paymentHeader)
       
       // Verify payment structure
-      if (payment.protocol !== 'x402' || !payment.authorization) {
-        throw new Error('Invalid payment format')
+      if (payment.protocol !== 'x402' || !payment.txHash) {
+        console.error('[x402] Invalid payment format - missing txHash')
+        throw new Error('Invalid payment format - transaction hash required')
       }
 
-      // In production, verify the EIP-3009 signature here:
-      // 1. Verify the signature is valid
-      // 2. Check that the authorization hasn't been used
-      // 3. Verify the amount matches the price
-      // 4. Submit to facilitator and wait for on-chain confirmation
-      
-      // For now, log and allow through
-      console.log('[x402] Payment received:', {
-        network: payment.network,
-        hasAuthorization: !!payment.authorization,
+      console.log('[x402] Verifying transaction:', payment.txHash)
+
+      // Get the transaction receipt
+      const receipt = await publicClient.getTransactionReceipt({
+        hash: payment.txHash as `0x${string}`,
       })
+
+      if (!receipt || receipt.status !== 'success') {
+        console.error('[x402] Transaction failed or not found')
+        throw new Error('Transaction not confirmed')
+      }
+
+      // Verify the transaction contains a USDC transfer to our wallet
+      const expectedAmount = parseUnits(config.price, 6) // USDC has 6 decimals
       
-      // Allow the request to proceed
+      let transferFound = false
+      for (const log of receipt.logs) {
+        // Check if this is a Transfer event from USDC contract
+        if (
+          log.address.toLowerCase() === USDC_BASE.toLowerCase() &&
+          log.topics[0] === TRANSFER_EVENT_SIGNATURE
+        ) {
+          // topics[1] = from, topics[2] = to, data = amount
+          const to = '0x' + log.topics[2]?.slice(-40) // Last 40 chars of topic[2]
+          const amount = BigInt(log.data)
+
+          console.log('[x402] Transfer found:', {
+            to,
+            amount: amount.toString(),
+            expected: expectedAmount.toString(),
+          })
+
+          if (
+            to.toLowerCase() === RECIPIENT_WALLET.toLowerCase() &&
+            amount >= expectedAmount
+          ) {
+            transferFound = true
+            break
+          }
+        }
+      }
+
+      if (!transferFound) {
+        console.error('[x402] No valid USDC transfer found in transaction')
+        throw new Error('Payment verification failed - no valid transfer found')
+      }
+
+      console.log('[x402] ✓ Payment verified! TxHash:', payment.txHash)
+      
+      // Payment verified - allow access
       return NextResponse.next()
-    } catch (err) {
-      console.error('[x402] Payment verification failed:', err)
+      
+    } catch (err: any) {
+      console.error('[x402] Payment verification failed:', err.message)
       return new NextResponse(
-        JSON.stringify({ error: 'Invalid payment' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: 'Payment verification failed',
+          details: err.message 
+        }),
+        { 
+          status: 402,
+          headers: { 'Content-Type': 'application/json' } 
+        }
       )
     }
   }

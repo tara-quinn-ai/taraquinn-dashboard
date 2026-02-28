@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useAccount, useConnect, useDisconnect, useWalletClient, useChainId, useSwitchChain, usePublicClient } from 'wagmi'
 import { base } from 'wagmi/chains'
-import { parseUnits, type Address } from 'viem'
+import { parseUnits, type Address, type Hash } from 'viem'
 
 interface PayWithUsdcProps {
   productUrl: string
@@ -14,7 +14,7 @@ interface PayWithUsdcProps {
 // Base mainnet USDC contract
 const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Address
 
-// ERC-20 ABI for balanceOf
+// ERC-20 ABI
 const ERC20_ABI = [
   {
     inputs: [{ name: 'account', type: 'address' }],
@@ -25,10 +25,10 @@ const ERC20_ABI = [
   },
   {
     inputs: [
-      { name: 'spender', type: 'address' },
+      { name: 'to', type: 'address' },
       { name: 'amount', type: 'uint256' },
     ],
-    name: 'approve',
+    name: 'transfer',
     outputs: [{ name: '', type: 'bool' }],
     stateMutability: 'nonpayable',
     type: 'function',
@@ -44,7 +44,7 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
   
-  const [status, setStatus] = useState<'idle' | 'checking' | 'approving' | 'paying' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'checking' | 'transferring' | 'verifying' | 'success' | 'error'>('idle')
   const [error, setError] = useState<string>('')
   const [step, setStep] = useState<string>('')
 
@@ -69,7 +69,7 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
 
     setStatus('checking')
     setError('')
-    setStep('Checking USDC balance...')
+    setStep('Getting payment details...')
 
     try {
       if (!publicClient || !walletClient || !address) {
@@ -90,9 +90,13 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
         throw new Error('No payment requirements returned')
       }
 
+      const recipientAddress = paymentRequired.recipient as Address
+
       // Parse amount ($1 = 1,000,000 USDC with 6 decimals)
       const amountInDollars = parseFloat(paymentRequired.amount)
       const usdcAmount = parseUnits(amountInDollars.toString(), 6)
+
+      setStep('Checking USDC balance...')
 
       // Step 2: Check USDC balance
       const balance = await publicClient.readContract({
@@ -107,53 +111,62 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
         throw new Error(`Insufficient USDC. You have $${balanceFormatted}, need $${amountInDollars}`)
       }
 
-      setStep(`Confirming payment of $${price}...`)
-      setStatus('paying')
+      setStep(`Sending ${price} USDC...`)
+      setStatus('transferring')
 
-      // Step 3: Use x402 SDK to create payment
-      const { x402HTTPClient } = await import('@x402/core/client')
-      const { x402Client } = await import('@x402/core/client')
-      const { ExactEvmScheme, toClientEvmSigner } = await import('@x402/evm')
+      // Step 3: Transfer USDC directly
+      const txHash = await walletClient.writeContract({
+        address: USDC_BASE,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [recipientAddress, usdcAmount],
+      })
+
+      console.log('[Payment] USDC transfer submitted:', txHash)
       
-      // Create signer from wallet
-      const signer = toClientEvmSigner({
-        address: address,
-        signTypedData: async (message: any) => {
-          return await walletClient.signTypedData(message)
+      setStep('Waiting for blockchain confirmation...')
+      setStatus('verifying')
+
+      // Step 4: Wait for transaction to be mined
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+        confirmations: 1,
+      })
+
+      if (receipt.status !== 'success') {
+        throw new Error('Transaction failed on blockchain')
+      }
+
+      console.log('[Payment] Transaction confirmed:', txHash)
+      
+      setStep('Verifying payment...')
+
+      // Step 5: Send transaction hash to backend for verification
+      const verifyResponse = await fetch(productUrl, {
+        headers: {
+          'X-Payment': JSON.stringify({
+            protocol: 'x402',
+            version: '2.0',
+            network: paymentRequired.network,
+            txHash: txHash,
+          }),
         },
-      }, publicClient)
+      })
 
-      // Create x402 client
-      const x402 = new x402Client().register(
-        paymentRequired.network,
-        new ExactEvmScheme(signer)
-      )
+      if (!verifyResponse.ok) {
+        const errorData = await verifyResponse.json().catch(() => ({}))
+        throw new Error(errorData.details || errorData.error || 'Payment verification failed')
+      }
+
+      const downloadData = await verifyResponse.json()
       
-      const httpClient = new x402HTTPClient(x402)
-
-      // Step 4: Make payment and get proof
-      setStep('Creating payment authorization...')
-      
-      const paymentProof = await httpClient.payAndRetry(
-        productUrl,
-        undefined,
-        {
-          headers: {},
-          body: undefined,
-        }
-      )
-
-      setStep('Payment successful!')
+      setStep('Payment confirmed!')
       setStatus('success')
       
-      // The x402 SDK handled the retry, response should be the product download
-      if (paymentProof.ok) {
-        const data = await paymentProof.json()
-        if (onSuccess) {
-          setTimeout(() => onSuccess(data), 500)
-        }
-      } else {
-        throw new Error('Payment processed but download failed')
+      console.log('[Payment] ✓ Payment verified, download ready')
+      
+      if (onSuccess) {
+        setTimeout(() => onSuccess(downloadData), 500)
       }
       
     } catch (err: any) {
@@ -168,10 +181,10 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
     return (
       <div style={{ padding: '16px', background: '#10b981', color: 'white', borderRadius: '8px' }}>
         <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>
-          ✓ Payment confirmed!
+          ✓ Payment confirmed on blockchain!
         </div>
         <div style={{ fontSize: '14px', opacity: 0.9 }}>
-          {step}
+          Download starting...
         </div>
       </div>
     )
@@ -181,7 +194,7 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
     return (
       <div>
         <div style={{ padding: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', marginBottom: '12px' }}>
-          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Payment Error</div>
+          <div style={{ fontWeight: '600', marginBottom: '4px' }}>Payment Failed</div>
           <div style={{ fontSize: '14px' }}>{error}</div>
         </div>
         <button 
@@ -204,7 +217,7 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
   }
 
   const isWrongNetwork = isConnected && chainId !== base.id
-  const isProcessing = status === 'checking' || status === 'approving' || status === 'paying'
+  const isProcessing = status !== 'idle'
 
   return (
     <div>
@@ -257,8 +270,8 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
       )}
       
       {isConnected && chainId === base.id && (
-        <div style={{ marginTop: '8px', fontSize: '12px', color: '#059669', background: '#d1fae5', padding: '10px', borderRadius: '6px', border: '1px solid #10b981' }}>
-          <strong>Real USDC payment:</strong> You need {price} USDC on Base network. This will actually transfer USDC from your wallet.
+        <div style={{ marginTop: '8px', fontSize: '12px', color: '#dc2626', background: '#fee2e2', padding: '10px', borderRadius: '6px', border: '1px solid #ef4444', fontWeight: '600' }}>
+          ⚠️ LIVE PAYMENT: This will transfer {price} USDC from your wallet. Not a test!
         </div>
       )}
     </div>
