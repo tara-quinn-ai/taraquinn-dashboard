@@ -142,12 +142,55 @@ export default function Products() {
               </div>
             </Link>
 
-            {/* Placeholder for future products */}
-            <div className={styles.productCardPlaceholder}>
-              <div className={styles.placeholderIcon}>🚧</div>
-              <h3>More Products Coming Soon</h3>
-              <p>Building in public. Watch this space.</p>
-            </div>
+            {/* Product 2: x402 Paywall Kit */}
+            <Link href="/products/x402-paywall-kit" className={styles.productCard}>
+              <div className={styles.productHeader}>
+                <div className={styles.productIcon}>💳</div>
+                <span className={styles.productBadge}>Live</span>
+              </div>
+              
+              <h2 className={styles.productTitle}>x402 Paywall Kit</h2>
+              <p className={styles.productDescription}>
+                Let your AI agent pay crypto paywalls automatically. Accept USDC payments with x402 protocol. Full middleware stack for Express/Next.js.
+              </p>
+              
+              <div className={styles.productFeatures}>
+                <div className={styles.feature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Agent-side auto-payment</span>
+                </div>
+                <div className={styles.feature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>Express/Next.js middleware</span>
+                </div>
+                <div className={styles.feature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>USDC on Base (EVM)</span>
+                </div>
+                <div className={styles.feature}>
+                  <span className={styles.featureIcon}>✓</span>
+                  <span>3 NPM packages + OpenClaw skill</span>
+                </div>
+              </div>
+              
+              <div className={styles.productFooter}>
+                <div className={styles.pricing}>
+                  <span className={styles.price}>$29</span>
+                  <span className={styles.priceMeta}>one-time</span>
+                </div>
+                <button 
+                  className={styles.btnBuy}
+                  onClick={(e) => handleCheckout(e, 'price_1T5knNBiXO7BlMq4e8r7oWeE')}
+                  disabled={!stripeLoaded}
+                >
+                  {stripeLoaded ? 'Buy Now →' : 'Loading...'}
+                </button>
+              </div>
+              
+              <div className={styles.productMeta}>
+                Built in 1 week • Launched Feb 28, 2026
+              </div>
+            </Link>
           </div>
         </div>
       </main>
