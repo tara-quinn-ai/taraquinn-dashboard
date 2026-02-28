@@ -18,12 +18,12 @@ const TRANSFER_EVENT_SIGNATURE = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4
 // x402 payment configuration
 const paywallConfig = {
   '/api/products/business-starter': {
-    price: '1.00', // $1 for testing
+    price: '19.00',
     currency: 'USD',
     network: 'eip155:8453', // Base mainnet
   },
   '/api/products/x402-kit': {
-    price: '1.00', // $1 for testing
+    price: '29.00',
     currency: 'USD',
     network: 'eip155:8453', // Base mainnet
   },

@@ -113,13 +113,19 @@ export default function BusinessStarterProduct() {
                 </button>
                 <div style={{ marginTop: '12px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' }}>
                   <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                    Or pay with crypto (testing - $1):
+                    Or pay with USDC:
                   </div>
                   <PayWithUsdc 
                     productUrl="/api/products/business-starter"
-                    price="$1"
+                    price="$19"
                     onSuccess={(data) => {
-                      window.location.href = data.downloadUrl
+                      // Trigger immediate download
+                      const link = document.createElement('a')
+                      link.href = data.downloadUrl
+                      link.download = 'openclaw-business-starter.tar.gz'
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
                     }}
                   />
                 </div>

@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { generateDownloadToken } from '../../download/route'
 
 export async function GET(req: NextRequest) {
-  // This endpoint will be protected by x402 middleware (coming next)
+  // This endpoint is protected by x402 middleware
+  // If we get here, payment was verified
+  
+  const productId = 'x402-paywall-kit'
+  const token = generateDownloadToken(productId)
+  
+  const baseUrl = req.headers.get('origin') || 'https://taraquinn.ai'
+  const downloadUrl = `${baseUrl}/api/download?token=${token}&product=${productId}`
+  
   return NextResponse.json({
-    product: 'x402-paywall-kit',
-    downloadUrl: 'https://github.com/tara-quinn-ai/x402-kit/archive/refs/heads/main.tar.gz',
+    product: productId,
+    downloadUrl,
     version: '1.0.0',
+    message: 'Download link expires in 1 hour',
   })
 }

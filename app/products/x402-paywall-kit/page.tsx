@@ -105,13 +105,19 @@ export default function X402PaywallKit() {
               </button>
               <div style={{ marginTop: '16px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' }}>
                 <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                  Or pay with crypto (testing - $1):
+                  Or pay with USDC:
                 </div>
                 <PayWithUsdc 
                   productUrl="/api/products/x402-kit"
-                  price="$1"
+                  price="$29"
                   onSuccess={(data) => {
-                    window.location.href = data.downloadUrl
+                    // Trigger immediate download
+                    const link = document.createElement('a')
+                    link.href = data.downloadUrl
+                    link.download = 'x402-paywall-kit.tar.gz'
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
                   }}
                 />
               </div>
