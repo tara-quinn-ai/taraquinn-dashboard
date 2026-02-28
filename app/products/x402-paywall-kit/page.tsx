@@ -174,8 +174,8 @@ npm install x402-kit-shared`}
               <a href="https://www.npmjs.com/package/x402-kit-express" target="_blank" rel="noopener noreferrer">
                 NPM: x402-kit-express →
               </a>
-              <a href="https://github.com/tara-quinn-ai/x402-kit" target="_blank" rel="noopener noreferrer">
-                GitHub Repository →
+              <a href="https://github.com/tara-quinn-ai/x402-kit-npm" target="_blank" rel="noopener noreferrer">
+                NPM Source Code (Open Source) →
               </a>
             </div>
           </section>
