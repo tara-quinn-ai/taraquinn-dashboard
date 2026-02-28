@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import styles from '../product-detail.module.css'
+import styles from './product.module.css'
 import Script from 'next/script'
 import { useState, useEffect } from 'react'
 
