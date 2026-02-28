@@ -52,15 +52,34 @@ export async function middleware(request: NextRequest) {
 
       console.log('[x402] Verifying transaction:', payment.txHash)
 
-      // Get the transaction receipt
-      const receipt = await publicClient.getTransactionReceipt({
-        hash: payment.txHash as `0x${string}`,
-      })
+      // Wait for the transaction receipt (with retries)
+      let receipt
+      let attempts = 0
+      const maxAttempts = 10
+      
+      while (!receipt && attempts < maxAttempts) {
+        try {
+          receipt = await publicClient.getTransactionReceipt({
+            hash: payment.txHash as `0x${string}`,
+          })
+          if (receipt) break
+        } catch (err) {
+          // Transaction not found yet, wait and retry
+          attempts++
+          if (attempts >= maxAttempts) {
+            throw new Error('Transaction not found after maximum retries')
+          }
+          console.log(`[x402] Transaction not found, retrying (${attempts}/${maxAttempts})...`)
+          await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds
+        }
+      }
 
       if (!receipt || receipt.status !== 'success') {
-        console.error('[x402] Transaction failed or not found')
+        console.error('[x402] Transaction failed or not confirmed')
         throw new Error('Transaction not confirmed')
       }
+      
+      console.log('[x402] Transaction confirmed in block:', receipt.blockNumber)
 
       // Verify the transaction contains a USDC transfer to our wallet
       const expectedAmount = parseUnits(config.price, 6) // USDC has 6 decimals
