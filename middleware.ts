@@ -29,8 +29,10 @@ export function middleware(request: NextRequest) {
   const paymentHeader = request.headers.get('x-payment')
   
   if (paymentHeader) {
-    // TODO: Verify payment signature with x402 protocol
-    // For now, allow through (verification would happen here)
+    // TESTING MODE: Mock payment verification
+    // In production, this would verify the EIP-3009 signature
+    // and check that USDC was actually transferred
+    console.log('[x402 MOCK] Payment header received:', paymentHeader)
     return NextResponse.next()
   }
 

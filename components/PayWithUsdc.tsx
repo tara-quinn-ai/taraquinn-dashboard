@@ -39,12 +39,18 @@ export function PayWithUsdc({ productUrl, price, onSuccess }: PayWithUsdcProps) 
 
       const paymentData = await response.json()
       
-      // Step 2: In a real implementation, this would:
-      // - Sign an EIP-3009 transferWithAuthorization message
-      // - Send the signed authorization to the x402 facilitator
-      // - Retry the request with X-Payment header containing the signature
+      // Step 2: TESTING MODE - Mock payment
+      // In production, this would:
+      // 1. Check wallet USDC balance (must have >= $1 USDC on Base)
+      // 2. Sign an EIP-3009 transferWithAuthorization message
+      // 3. Send the signed authorization to the x402 facilitator
+      // 4. Facilitator verifies and settles on-chain
+      // 5. Return payment proof
       
-      // For now, simulate success after a delay
+      console.log('[TESTING] Mock payment - no USDC actually transferred')
+      console.log('[TESTING] In production, would require', price, 'USDC on Base')
+      
+      // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       // Step 3: Retry request with payment proof
