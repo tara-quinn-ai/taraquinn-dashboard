@@ -4,6 +4,7 @@ import Link from 'next/link'
 import styles from './product.module.css'
 import Script from 'next/script'
 import { useState, useEffect } from 'react'
+import { PayWithUsdc } from '@/components/PayWithUsdc'
 
 declare global {
   interface Window {
@@ -100,8 +101,20 @@ export default function X402PaywallKit() {
                 onClick={handleCheckout}
                 disabled={!stripeLoaded}
               >
-                {stripeLoaded ? 'Buy Now with Card →' : 'Loading...'}
+                {stripeLoaded ? 'Buy Now with Card — $29 →' : 'Loading...'}
               </button>
+              <div style={{ marginTop: '16px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' }}>
+                <div style={{ marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                  Or pay with crypto (testing - $1):
+                </div>
+                <PayWithUsdc 
+                  productUrl="/api/products/x402-kit"
+                  price="$1"
+                  onSuccess={(data) => {
+                    window.location.href = data.downloadUrl
+                  }}
+                />
+              </div>
             </div>
           </div>
 

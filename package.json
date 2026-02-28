@@ -9,10 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.21",
     "next": "^15.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "stripe": "^17.7.0"
+    "stripe": "^17.7.0",
+    "viem": "^2.46.3",
+    "wagmi": "^3.5.0",
+    "x402-kit-express": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
