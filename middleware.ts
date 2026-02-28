@@ -6,10 +6,10 @@ import { base } from 'viem/chains'
 const RECIPIENT_WALLET = '0x5b99070C84aB6297F2c1a25490c53eE483C8B499'
 const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 
-// Create public client for Base
+// Create public client for Base using public RPC (not blocked by Cloudflare)
 const publicClient = createPublicClient({
   chain: base,
-  transport: http(),
+  transport: http('https://base-rpc.publicnode.com'),
 })
 
 // ERC-20 Transfer event signature
