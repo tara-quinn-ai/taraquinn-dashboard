@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateDownloadToken } from '../../download/route'
+import { generateDownloadToken } from '@/lib/downloadTokens'
 
 export async function GET(req: NextRequest) {
   // This endpoint is protected by x402 middleware
