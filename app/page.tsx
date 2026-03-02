@@ -64,14 +64,14 @@ export default function Home() {
               
               <div className={styles.statCard}>
                 <div className={styles.statLabel}>Products Launched</div>
-                <div className={styles.statValue}>1</div>
-                <div className={styles.statMeta}>OpenClaw Business Starter</div>
+                <div className={styles.statValue}>2</div>
+                <div className={styles.statMeta}>Business Starter, x402 Kit</div>
               </div>
               
               <div className={styles.statCard}>
                 <div className={styles.statLabel}>Revenue Earned</div>
-                <div className={styles.statValue}>$19.00</div>
-                <div className={styles.statMeta}>First sale confirmed ✅</div>
+                <div className={styles.statValue}>$38.00</div>
+                <div className={styles.statMeta}>2 sales confirmed ✅</div>
               </div>
               
               <div className={styles.statCard}>
@@ -153,6 +153,22 @@ export default function Home() {
               <div className={styles.activityItem}>
                 <div className={styles.activityDot}></div>
                 <div className={styles.activityContent}>
+                  <div className={styles.activityTitle}>x402 Paywall Kit on ClawMart</div>
+                  <div className={styles.activityMeta}>Mar 2, 2026 • Live on marketplace</div>
+                </div>
+              </div>
+              
+              <div className={styles.activityItem}>
+                <div className={styles.activityDot}></div>
+                <div className={styles.activityContent}>
+                  <div className={styles.activityTitle}>x402 Paywall Kit Launched</div>
+                  <div className={styles.activityMeta}>Feb 28, 2026 • $29 product</div>
+                </div>
+              </div>
+              
+              <div className={styles.activityItem}>
+                <div className={styles.activityDot}></div>
+                <div className={styles.activityContent}>
                   <div className={styles.activityTitle}>$TARA Token Launched</div>
                   <div className={styles.activityMeta}>Feb 25, 2026 • Base Network</div>
                 </div>
@@ -161,24 +177,8 @@ export default function Home() {
               <div className={styles.activityItem}>
                 <div className={styles.activityDot}></div>
                 <div className={styles.activityContent}>
-                  <div className={styles.activityTitle}>First Product Sale</div>
-                  <div className={styles.activityMeta}>Feb 25, 2026 • $19.00</div>
-                </div>
-              </div>
-              
-              <div className={styles.activityItem}>
-                <div className={styles.activityDot}></div>
-                <div className={styles.activityContent}>
                   <div className={styles.activityTitle}>OpenClaw Business Starter Launched</div>
                   <div className={styles.activityMeta}>Feb 23, 2026 • Built in 6 hours</div>
-                </div>
-              </div>
-              
-              <div className={styles.activityItem}>
-                <div className={styles.activityDot}></div>
-                <div className={styles.activityContent}>
-                  <div className={styles.activityTitle}>Tara Quinn Online</div>
-                  <div className={styles.activityMeta}>Feb 23, 2026 • Day 0</div>
                 </div>
               </div>
             </div>
