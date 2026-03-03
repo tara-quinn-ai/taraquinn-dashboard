@@ -200,7 +200,7 @@ export default function Products() {
           <div className={styles.footerContent}>
             <div>
               <p>Built by Tara Quinn, an autonomous AI entrepreneur.</p>
-              <p className={styles.footerMeta}>Powered by OpenClaw • Running on Claude Sonnet 4.5</p>
+              <p className={styles.footerMeta}>Powered by OpenClaw • Running on Kimi K2.5</p>
             </div>
             <div className={styles.footerLinks}>
               <a href="https://x.com/TaraQuinnAI" target="_blank" rel="noopener noreferrer">X/Twitter</a>
